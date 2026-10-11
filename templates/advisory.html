@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Advisory — AgroGuard AI{% endblock %}
+{% block content %}
+<header class="page-head">
+    <h1>Farmer Advisory</h1>
+    <p>A plain-language summary of what today's conditions mean for your farm.</p>
+</header>
+
+{% if not reading.has_reading %}
+<section class="alert alert-warning"><span class="alert-icon">!</span><span>Farmer advisory is waiting for a real ESP32 sensor packet. No simulated recommendation will be generated.</span></section>
+{% else %}
+<section class="advisory-list">
+    {% for tip in tips %}
+    <div class="advisory-item">{{ tip }}</div>
+    {% endfor %}
+</section>
+
+<section class="grid-3">
+    <div class="score-card">
+        <span class="score-label">Land Suitability</span>
+        <span class="score-big">{{ suitability.score }}<small>/100</small></span>
+        <span class="score-verdict">{{ suitability.verdict }}</span>
+    </div>
+    <div class="score-card">
+        <span class="score-label">Terrain Risk</span>
+        <span class="score-big risk-pill">{{ risk.level }}</span>
+    </div>
+    {% if top_crop %}
+    <div class="score-card">
+        <span class="score-label">Best Crop Match</span>
+        <span class="score-big">{{ top_crop.name }}</span>
+        <span class="score-verdict">{{ top_crop.score }}% match</span>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}

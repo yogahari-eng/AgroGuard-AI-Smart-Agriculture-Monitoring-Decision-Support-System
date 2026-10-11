@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Land Intelligence — AgroGuard AI{% endblock %}
+{% block content %}
+<header class="topbar page-head-modern">
+    <div>
+        <span class="eyebrow">Field Intelligence</span>
+        <h1>Land &amp; Terrain Overview</h1>
+        <p>Understand farm suitability and crop fit from the latest field conditions.</p>
+    </div>
+    <a class="btn-primary btn-compact" href="{{ url_for('dashboard') }}">Open live dashboard →</a>
+</header>
+
+{% if not reading.has_reading %}
+<section class="alert alert-warning"><span class="alert-icon">!</span><span>No real ESP32 reading has arrived yet. Power the field node and check Wi-Fi/API settings before land analysis is calculated.</span></section>
+{% else %}
+<section class="hero-panel land-hero">
+    <div>
+        <span class="hero-kicker"><span class="live-dot"></span> Latest field assessment</span>
+        <h2>Your land is being evaluated across climate, moisture and terrain conditions.</h2>
+        <p>AgroGuard combines sensor readings with practical agronomic logic to turn raw field data into understandable decisions.</p>
+    </div>
+    <form method="GET" class="rainfall-card">
+        <label for="rainfall">Annual rainfall estimate</label>
+        <div class="rainfall-input"><input type="number" id="rainfall" name="rainfall" value="{{ rainfall|int }}" min="0" max="6000"><span>mm/year</span></div>
+        <button type="submit" class="btn-secondary">Recalculate score</button>
+    </form>
+</section>
+
+<section class="insight-grid">
+    <article class="insight-card featured-card">
+        <div class="card-head"><span class="card-icon">✓</span><span class="score-label">Land Suitability</span></div>
+        <div class="score-row"><strong>{{ suitability.score }}</strong><span>/100</span></div>
+        <div class="progress"><i style="width: {{ suitability.score }}%"></i></div>
+        <p class="score-verdict">{{ suitability.verdict }}</p>
+        <ul class="reason-list">{% for r in suitability.reasons %}<li><span>•</span>{{ r }}</li>{% endfor %}</ul>
+    </article>
+
+    <article class="insight-card risk-{{ risk.level|replace(' ', '-')|lower }}">
+        <div class="card-head"><span class="card-icon">⌁</span><span class="score-label">Terrain Risk Screening</span></div>
+        <div class="risk-display"><strong>{{ risk.level }}</strong><span class="risk-indicator"></span></div>
+        <p class="small-muted">Slope-based terrain screening is unavailable because the current ESP32 node has no tilt/slope sensor.</p>
+        <ul class="reason-list">{% for f in risk.factors %}<li><span>•</span>{{ f }}</li>{% endfor %}</ul>
+        <p class="disclaimer">{{ risk.disclaimer }}</p>
+    </article>
+
+    <article class="insight-card">
+        <div class="card-head"><span class="card-icon">◌</span><span class="score-label">Current Conditions</span></div>
+        <div class="condition-list">
+            <div><span>Temperature</span><strong>{{ reading.temperature }}°C</strong></div>
+            <div><span>Soil moisture</span><strong>{{ reading.soil_moisture_pct }}%</strong></div>
+            <div><span>Slope</span><strong>Not available</strong></div>
+            <div><span>Rain</span><strong>{{ 'Detected' if reading.rain_status == 'RAIN' else 'No rain' }}</strong></div>
+        </div>
+    </article>
+</section>
+
+<div class="section-heading-row">
+    <div><span class="eyebrow">Smart Crop Matching</span><h2>Recommended crops</h2><p>Ranked from the current temperature, soil moisture and rainfall profile. Terrain fit is not evaluated without a slope sensor.</p></div>
+</div>
+<section class="crop-grid modern-crops">
+    {% for crop in crops %}
+    <article class="crop-card">
+        <div class="crop-top"><span class="crop-rank">0{{ loop.index }}</span><span class="match-badge">{{ crop.score }}% match</span></div>
+        <div class="crop-symbol">{{ crop.name[0] }}</div>
+        <h3>{{ crop.name }}</h3>
+        <div class="progress crop-progress"><i style="width: {{ crop.score }}%"></i></div>
+        <ul class="reason-list compact-list">{% for w in crop.why %}<li><span>•</span>{{ w }}</li>{% endfor %}</ul>
+        <p class="crop-notes">{{ crop.notes }}</p>
+    </article>
+    {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Crop Health — AgroGuard AI{% endblock %}
+{% block content %}
+<header class="page-head">
+    <h1>Crop Health — Disease &amp; Pest Detection</h1>
+    <p>Upload a photo of a leaf or crop. This is an AI screening tool, not a replacement for a professional agricultural diagnosis.</p>
+</header>
+
+<section class="panel">
+    <form method="POST" enctype="multipart/form-data" class="upload-form">
+        <label>Analysis type</label>
+        <div class="radio-row">
+            <label><input type="radio" name="analysis_type" value="disease" checked> Disease</label>
+            <label><input type="radio" name="analysis_type" value="pest"> Pest</label>
+        </div>
+        <label for="image">Crop / leaf photo</label>
+        <input type="file" id="image" name="image" accept="image/*" required>
+        <button type="submit" class="btn-primary">Analyze image</button>
+    </form>
+</section>
+
+{% if result %}
+<section class="panel result-panel">
+    <div class="result-grid">
+        <img src="{{ result.image_url }}" alt="Uploaded crop image" class="result-image">
+        <div class="result-details">
+            <span class="badge {{ 'badge-mock' if result.is_mock else 'badge-real' }}">
+                {{ 'Demo model (no trained .keras file loaded)' if result.is_mock else 'Live model prediction' }}
+            </span>
+            <h2>{{ result.prediction }}</h2>
+            <p class="confidence">Confidence: {{ result.confidence }}% — {{ result.label }}</p>
+            <p class="recommendation">{{ result.recommendation }}</p>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<h2 class="section-title">Recent Analyses</h2>
+<table class="data-table">
+    <thead><tr><th>Time</th><th>Type</th><th>Result</th><th>Confidence</th></tr></thead>
+    <tbody>
+        {% for h in history %}
+        <tr>
+            <td>{{ h.timestamp[11:19] }}</td>
+            <td>{{ h.analysis_type|capitalize }}</td>
+            <td>{{ h.prediction }}</td>
+            <td>{{ h.confidence }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

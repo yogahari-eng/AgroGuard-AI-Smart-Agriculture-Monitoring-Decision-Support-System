@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Create account — AgroGuard AI{% endblock %}
+{% block auth_content %}
+<div class="auth-screen">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <span class="brand-mark">AG</span>
+            <h1>Create your account</h1>
+            <p class="auth-sub">Set up AgroGuard AI for your farm</p>
+        </div>
+        <form method="POST" class="auth-form">
+            <label for="name">Full name</label>
+            <input type="text" id="name" name="name" placeholder="Your name" required autofocus>
+
+            <label for="contact">Email or phone number</label>
+            <input type="text" id="contact" name="contact" placeholder="you@example.com or +91XXXXXXXXXX" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="At least 6 characters" required>
+
+            <label for="confirm">Confirm password</label>
+            <input type="password" id="confirm" name="confirm" placeholder="Re-enter password" required>
+
+            <button type="submit" class="btn-primary">Create account</button>
+        </form>
+        <p class="auth-foot">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+    </div>
+</div>
+{% endblock %}

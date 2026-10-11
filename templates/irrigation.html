@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Irrigation — AgroGuard AI{% endblock %}
+{% block content %}
+<header class="page-head">
+    <h1>Smart Irrigation</h1>
+    <p>Automatic mode decides using soil moisture and rain; manual mode gives you direct control.</p>
+</header>
+
+<section class="grid-2">
+    <div class="panel">
+        <h2>Current Status</h2>
+        <div class="pump-status pump-{{ irrigation.state|lower }}">
+            <span class="pump-status-dot"></span>
+            Pump {{ irrigation.state }}
+        </div>
+        <p class="stat-reason">{{ irrigation.reason }}</p>
+        <ul class="reason-list">
+            <li>Mode: {{ settings.irrigation_mode }}</li>
+            <li>Soil moisture: {{ (reading.soil_moisture_pct ~ '%') if reading.has_reading else 'Waiting for sensor' }}</li>
+            <li>Rain: {{ ('Detected' if irrigation.rain_status == 'RAIN' else 'None') if reading.has_reading else 'Waiting for sensor' }}</li>
+        </ul>
+    </div>
+
+    <div class="panel">
+        <h2>Mode</h2>
+        <form method="POST" class="inline-form">
+            <input type="hidden" name="action" value="set_mode">
+            <select name="mode">
+                <option value="AUTO" {{ 'selected' if settings.irrigation_mode == 'AUTO' }}>Automatic</option>
+                <option value="MANUAL" {{ 'selected' if settings.irrigation_mode == 'MANUAL' }}>Manual</option>
+            </select>
+            <button type="submit" class="btn-secondary">Set mode</button>
+        </form>
+
+        <h2>Manual Control</h2>
+        <div class="button-row">
+            <form method="POST"><input type="hidden" name="action" value="pump_on">
+                <button type="submit" class="btn-primary">Turn Pump ON</button></form>
+            <form method="POST"><input type="hidden" name="action" value="pump_off">
+                <button type="submit" class="btn-danger">Turn Pump OFF</button></form>
+        </div>
+        <p class="hint">Switching manual control automatically sets mode to Manual.</p>
+    </div>
+</section>
+
+<h2 class="section-title">Recent Pump Activity</h2>
+<table class="data-table">
+    <thead><tr><th>Time</th><th>State</th><th>Mode</th><th>Reason</th></tr></thead>
+    <tbody>
+        {% for h in history %}
+        <tr>
+            <td>{{ h.timestamp[11:19] }}</td>
+            <td><span class="badge badge-{{ 'on' if h.state=='ON' else 'off' }}">{{ h.state }}</span></td>
+            <td>{{ h.mode }}</td>
+            <td>{{ h.reason }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

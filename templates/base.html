@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b2418">
+    <title>{% block title %}AgroGuard AI{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block refresh %}{% endblock %}
+</head>
+<body>
+    {% if session.get('user_id') %}
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <a class="brand" href="{{ url_for('dashboard') }}">
+                    <span class="brand-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M12 21V10m0 0c0-4.2 2.4-6.7 7-7-.1 4.3-2.5 7-7 7Zm0 4c0-3.3-2-5.4-6-5.5.1 3.5 2.1 5.6 6 5.5Z"/></svg>
+                    </span>
+                    <span><strong>AgroGuard</strong><em>AI</em></span>
+                </a>
+                <div class="system-pill"><span class="live-dot"></span>System online</div>
+            </div>
+
+            <div class="nav-section-label">Workspace</div>
+            <nav class="navlinks" aria-label="Primary navigation">
+                <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint=='dashboard' }}">
+                    <span class="nav-icon">⌂</span><span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('landing') }}" class="{{ 'active' if request.endpoint=='landing' }}">
+                    <span class="nav-icon">◈</span><span>Land &amp; Terrain</span>
+                </a>
+                <a href="{{ url_for('irrigation_page') }}" class="{{ 'active' if request.endpoint=='irrigation_page' }}">
+                    <span class="nav-icon">◉</span><span>Irrigation</span>
+                </a>
+                <a href="{{ url_for('crop_health') }}" class="{{ 'active' if request.endpoint=='crop_health' }}">
+                    <span class="nav-icon">✦</span><span>Crop Health</span>
+                </a>
+                <a href="{{ url_for('advisory') }}" class="{{ 'active' if request.endpoint=='advisory' }}">
+                    <span class="nav-icon">◎</span><span>AI Advisory</span>
+                </a>
+                <a href="{{ url_for('analytics') }}" class="{{ 'active' if request.endpoint=='analytics' }}">
+                    <span class="nav-icon">▥</span><span>Analytics</span>
+                </a>
+            </nav>
+
+            <div class="nav-section-label">System</div>
+            <nav class="navlinks navlinks-secondary">
+                <a href="{{ url_for('settings_page') }}" class="{{ 'active' if request.endpoint=='settings_page' }}">
+                    <span class="nav-icon">⚙</span><span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="farmer-mini">
+                    <span class="avatar">FG</span>
+                    <span><strong>Farm Operator</strong><small>ESP32 Field Node</small></span>
+                </div>
+                <a class="logout" href="{{ url_for('logout') }}" title="Log out">↗</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="mobile-brand-row">
+                <a class="brand" href="{{ url_for('dashboard') }}"><span class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 21V10m0 0c0-4.2 2.4-6.7 7-7-.1 4.3-2.5 7-7 7Zm0 4c0-3.3-2-5.4-6-5.5.1 3.5 2.1 5.6 6 5.5Z"/></svg></span><span><strong>AgroGuard</strong><em>AI</em></span></a>
+            </div>
+            {% include '_flash.html' %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+        {% include '_flash.html' %}
+        {% block auth_content %}{% endblock %}
+    {% endif %}
+</body>
+</html>

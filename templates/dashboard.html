@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — AgroGuard AI{% endblock %}
+{% block refresh %}<meta http-equiv="refresh" content="{{ refresh_seconds }}">{% endblock %}
+{% block content %}
+<header class="topbar page-head-modern dashboard-head">
+    <div>
+        <span class="eyebrow">AgroGuard Command Center</span>
+        <h1>Live Farm Intelligence</h1>
+        <p>Real readings from your ESP32 field node, synchronized with irrigation and environmental monitoring.</p>
+    </div>
+    <div class="head-actions">
+        {% if reading.connected %}
+            <span class="source-pill"><span class="live-dot"></span>ESP32 CONNECTED</span>
+        {% else %}
+            <span class="source-pill demo"><span class="live-dot amber"></span>ESP32 OFFLINE</span>
+        {% endif %}
+        <span class="refresh-note">↻ {{ refresh_seconds }}s refresh</span>
+    </div>
+</header>
+
+{% if alerts %}
+<section class="alerts premium-alerts">
+    {% for a in alerts %}
+    <div class="alert alert-{{ a.level }}"><span class="alert-icon">{{ '!' if a.level != 'info' else 'i' }}</span><span>{{ a.text }}</span></div>
+    {% endfor %}
+</section>
+{% endif %}
+
+<section class="hardware-status-strip">
+    <div><span class="hardware-status-icon">⌁</span><span><small>FIELD NODE</small><strong>{{ 'Online' if reading.connected else 'Waiting / Offline' }}</strong></span></div>
+    <div><small>DATA SOURCE</small><strong>ESP32-D0WD-V3</strong></div>
+    <div><small>LAST PACKET</small><strong>{% if reading.last_seen_seconds is not none %}{{ reading.last_seen_seconds }}s ago{% else %}Not received{% endif %}</strong></div>
+    <div><small>PUMP LINK</small><strong>Relay GPIO 26</strong></div>
+</section>
+
+<section class="dashboard-overview">
+    <div class="overview-copy">
+        <span class="hero-kicker"><span class="live-dot"></span> Hardware monitoring</span>
+        <h2>{{ 'Your field sensors are transmitting real-time data.' if reading.has_reading else 'Connect and power the ESP32 to begin live monitoring.' }}</h2>
+        <p>No simulated sensor values are used. The dashboard displays only readings posted by the physical ESP32 node.</p>
+        <div class="overview-actions"><a href="{{ url_for('advisory') }}" class="btn-light">View farmer advisory →</a><a href="{{ url_for('analytics') }}" class="text-link">Explore analytics</a></div>
+    </div>
+    <div class="health-ring" style="--value: {{ reading.soil_moisture_pct if reading.has_reading else 0 }}">
+        <div><strong>{{ reading.soil_moisture_pct if reading.has_reading else '--' }}{% if reading.has_reading %}%{% endif %}</strong><span>soil moisture</span></div>
+    </div>
+</section>
+
+<div class="section-heading-row tight-heading"><div><h2>Live sensor overview</h2><p>Physical sensor readings from the ESP32 node.</p></div><span class="live-caption"><span class="live-dot"></span>{{ 'Receiving data' if reading.connected else 'Connection required' }}</span></div>
+<section class="sensor-grid">
+    <article class="sensor-card temperature-card"><div class="sensor-icon">☀</div><div><span class="stat-label">Temperature</span><strong>{% if reading.has_reading %}{{ reading.temperature }}<small>°C</small>{% else %}--{% endif %}</strong><p>DHT22 ambient temperature</p></div></article>
+    <article class="sensor-card humidity-card"><div class="sensor-icon">◔</div><div><span class="stat-label">Humidity</span><strong>{% if reading.has_reading %}{{ reading.humidity }}<small>%</small>{% else %}--{% endif %}</strong><p>DHT22 relative humidity</p></div></article>
+    <article class="sensor-card soil-card"><div class="sensor-icon">⌇</div><div><span class="stat-label">Soil Moisture</span><strong>{% if reading.has_reading %}{{ reading.soil_moisture_pct }}<small>%</small>{% else %}--{% endif %}</strong><p>Capacitive sensor</p></div></article>
+    <article class="sensor-card rain-card"><div class="sensor-icon">☂</div><div><span class="stat-label">Rain Status</span><strong class="text-value">{% if reading.has_reading %}{{ 'Detected' if reading.rain_status == 'RAIN' else 'No Rain' }}{% else %}--{% endif %}</strong><p>Analog rain sensor</p></div></article>
+</section>
+
+<section class="dashboard-detail-grid">
+    <article class="control-card irrigation-summary pump-{{ irrigation.state|lower }}">
+        <div class="card-head-row"><div><span class="eyebrow">Smart Irrigation</span><h2>Water control</h2></div><span class="pump-badge">Pump {{ irrigation.state }}</span></div>
+        <div class="irrigation-visual"><div class="pump-orb">◉</div><div><span>Operating mode</span><strong>{{ irrigation.mode }}</strong><small>{{ irrigation.reason }}</small></div></div>
+        <div class="mini-status-row"><div><span>Soil</span><b>{{ (reading.soil_moisture_pct ~ '%') if reading.has_reading else '--' }}</b></div><div><span>Rain</span><b>{{ ('Yes' if reading.rain_status == 'RAIN' else 'No') if reading.has_reading else '--' }}</b></div><div><span>Pump</span><b>{{ irrigation.state }}</b></div></div>
+        <a href="{{ url_for('irrigation_page') }}" class="card-link">Manage irrigation <span>→</span></a>
+    </article>
+
+    <article class="control-card terrain-summary">
+        <div class="card-head-row"><div><span class="eyebrow">Terrain Screening</span><h2>Ground stability</h2></div><span class="status-dot-label"><i></i>No slope sensor</span></div>
+        <div class="terrain-meter"><div class="terrain-line"><span style="left: 0%"></span></div><div class="terrain-labels"><span>Sensor</span><span>Not installed</span><span>Unavailable</span></div></div>
+        <div class="slope-number"><strong>--</strong><span>Slope / tilt data unavailable</span></div>
+        <p class="small-muted">No slope/tilt sensor is installed in the current hardware setup, so AgroGuard does not fabricate a slope value.</p>
+        <a href="{{ url_for('landing') }}" class="card-link">Review land intelligence <span>→</span></a>
+    </article>
+
+    <article class="control-card quick-actions-card">
+        <div class="card-head-row"><div><span class="eyebrow">Connected System</span><h2>Hardware stack</h2></div></div>
+        <div class="quick-action-list">
+            <div class="hardware-list-row"><span class="qa-icon">◈</span><span><b>DHT22 + Soil + Rain</b><small>Environmental sensing</small></span><i>✓</i></div>
+            <div class="hardware-list-row"><span class="qa-icon">⌁</span><span><b>Terrain Sensor</b><small>Not installed in current node</small></span><i>—</i></div>
+            <div class="hardware-list-row"><span class="qa-icon">◉</span><span><b>Relay + Mini Pump</b><small>Automatic/manual irrigation</small></span><i>✓</i></div>
+        </div>
+    </article>
+</section>
+{% endblock %}
